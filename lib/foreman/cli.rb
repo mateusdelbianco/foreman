@@ -51,6 +51,8 @@ class Foreman::CLI < Thor
   method_option :user,        :type => :string,  :aliases => "-u"
   method_option :template,    :type => :string,  :aliases => "-t"
   method_option :concurrency, :type => :string,  :aliases => "-c", :banner => '"alpha=5,bar=3"'
+  method_option :reload_signals, :type => :string, :banner => '"alpha=USR2,bar=HUP"', :desc => "Default: HUP"
+  method_option :stop_signals,   :type => :string, :banner => '"alpha=TERM,bar=QUIT"', :desc => "Default: TERM"
 
   def export(format, location=nil)
     check_procfile!
