@@ -83,6 +83,33 @@ describe Foreman::Export::Upstart, :fakefs do
       expect(File.read("/tmp/init/app-alpha-2.conf")).to    eq(example_export_file("upstart/app-alpha-2.conf"))
       expect(File.exists?("/tmp/init/app-bravo-1.conf")).to eq(false)
     end
+
+    context "cleaning up" do
+      let(:formation2) { "alpha=3,bravo=1" }
+      let(:engine2)   { Foreman::Engine.new(:formation => formation2).load_procfile(procfile) }
+      let(:options2)  { Hash.new }
+      let(:upstart2)  { Foreman::Export::Upstart.new("/tmp/init", engine2, options) }
+
+      before(:each) { stub(upstart2).say }
+
+      it "removes extra files when changing concurrency" do
+        upstart2.export
+        expect(File.exists?("/tmp/init/app.conf")).to         eq(true)
+        expect(File.exists?("/tmp/init/app-alpha.conf")).to   eq(true)
+        expect(File.exists?("/tmp/init/app-alpha-1.conf")).to eq(true)
+        expect(File.exists?("/tmp/init/app-alpha-2.conf")).to eq(true)
+        expect(File.exists?("/tmp/init/app-alpha-3.conf")).to eq(true)
+        expect(File.exists?("/tmp/init/app-bravo-1.conf")).to eq(true)
+
+        upstart.export
+        expect(File.exists?("/tmp/init/app.conf")).to         eq(true)
+        expect(File.exists?("/tmp/init/app-alpha.conf")).to   eq(true)
+        expect(File.exists?("/tmp/init/app-alpha-1.conf")).to eq(true)
+        expect(File.exists?("/tmp/init/app-alpha-2.conf")).to eq(true)
+        expect(File.exists?("/tmp/init/app-alpha-3.conf")).to eq(false)
+        expect(File.exists?("/tmp/init/app-bravo-1.conf")).to eq(false)
+      end
+    end
   end
 
   context "with alternate templates" do
