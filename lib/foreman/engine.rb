@@ -29,6 +29,8 @@ class Foreman::Engine
     @options = options.dup
 
     @options[:formation] ||= (options[:concurrency] || "all=1")
+    @options[:reload_signals] ||= (options[:reload_signals] || "all=HUP")
+    @options[:stop_signals] ||= (options[:stop_signals] || "all=TERM")
     @options[:timeout] ||= 5
 
     @env       = {}
@@ -216,6 +218,22 @@ class Foreman::Engine
     @formation ||= parse_formation(options[:formation])
   end
 
+  # Get the reload signal
+  #
+  # @returns [String]  The reload signal for the specified process
+  #
+  def reload_signals
+    @reload_signals ||= parse_signals("HUP", options[:reload_signals])
+  end
+
+  # Get the stop signal
+  #
+  # @returns [String]  The stop signal for the specified process
+  #
+  def stop_signals
+    @stop_signals ||= parse_signals("TERM", options[:stop_signals])
+  end
+
   # List the available process names
   #
   # @returns [Array]  A list of process names
@@ -315,6 +333,16 @@ private
     pairs.inject(Hash.new(0)) do |ax, pair|
       process, amount = pair.split("=")
       process == "all" ? ax.default = amount.to_i : ax[process] = amount.to_i
+      ax
+    end
+  end
+
+  def parse_signals(default, signals)
+    pairs = signals.to_s.gsub(/\s/, "").split(",")
+
+    pairs.inject(Hash.new(default)) do |ax, pair|
+      process, signal = pair.split("=")
+      process == "all" ? ax.default = signal : ax[process] = signal
       ax
     end
   end

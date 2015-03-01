@@ -24,6 +24,8 @@ class Foreman::Export::Upstart < Foreman::Export::Base
 
       1.upto(engine.formation[name]) do |num|
         port = engine.port_for(process, num)
+        reload_signal = engine.reload_signals[name]
+        stop_signal = engine.stop_signals[name]
         process_file = "#{app}-#{name}-#{num}.conf"
         write_template process_template, process_file, binding
       end

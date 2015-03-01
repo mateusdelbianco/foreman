@@ -9,6 +9,10 @@ env <%= name.upcase %>='<%= value.gsub(/'/, "'\"'\"'") %>'
 
 setuid <%= user %>
 
+reload signal <%= reload_signal %>
+
+kill signal <%= stop_signal %>
+
 chdir <%= engine.root %>
 
 exec <%= process.command %>

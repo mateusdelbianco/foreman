@@ -4,11 +4,13 @@ require "foreman/export/upstart"
 require "tmpdir"
 
 describe Foreman::Export::Upstart, :fakefs do
-  let(:procfile)  { write_procfile("/tmp/app/Procfile") }
-  let(:formation) { nil }
-  let(:engine)    { Foreman::Engine.new(:formation => formation).load_procfile(procfile) }
-  let(:options)   { Hash.new }
-  let(:upstart)   { Foreman::Export::Upstart.new("/tmp/init", engine, options) }
+  let(:procfile)       { write_procfile("/tmp/app/Procfile") }
+  let(:formation)      { nil }
+  let(:reload_signals) { nil }
+  let(:stop_signals)   { nil }
+  let(:engine)         { Foreman::Engine.new(:formation => formation, :reload_signals => reload_signals, :stop_signals => stop_signals).load_procfile(procfile) }
+  let(:options)        { Hash.new }
+  let(:upstart)        { Foreman::Export::Upstart.new("/tmp/init", engine, options) }
 
   before(:each) { load_export_templates_into_fakefs("upstart") }
   before(:each) { stub(upstart).say }
@@ -109,6 +111,20 @@ describe Foreman::Export::Upstart, :fakefs do
         expect(File.exists?("/tmp/init/app-alpha-3.conf")).to eq(false)
         expect(File.exists?("/tmp/init/app-bravo-1.conf")).to eq(false)
       end
+    end
+  end
+
+  context "with custom reload and stop signals" do
+    let(:reload_signals) { "alpha=USR2" }
+    let(:stop_signals) { "bravo=QUIT" }
+
+    it "exports to the filesystem with concurrency" do
+      upstart.export
+
+      expect(File.read("/tmp/init/app.conf")).to            eq(example_export_file("upstart/app.conf"))
+      expect(File.read("/tmp/init/app-alpha.conf")).to      eq(example_export_file("upstart/app-alpha.conf"))
+      expect(File.read("/tmp/init/app-alpha-1.conf")).to    eq(example_export_file("upstart/app-alpha-1-custom.conf"))
+      expect(File.read("/tmp/init/app-bravo-1.conf")).to    eq(example_export_file("upstart/app-bravo-1-custom.conf"))
     end
   end
 
