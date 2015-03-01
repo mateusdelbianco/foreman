@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     foreman (0.77.0)
-      dotenv (~> 1.0.2)
+      dotenv (>= 1.0.2, <= 2.0.0.beta)
       thor (~> 0.19.1)
 
 GEM
